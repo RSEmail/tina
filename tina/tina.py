@@ -1,4 +1,5 @@
 import shutil
+import os
 from CookbookRepo import *
 from CommunityCookbooks import *
 from GitLib import *
@@ -12,8 +13,12 @@ def tag_compare(x, y):
             return int(x) - int(y)
     return 0
 
+def cleanup():
+    if os.path.exists(".tina"):
+        shutil.rmtree(".tina")
+
 def main():
-    shutil.rmtree(".tina")
+    cleanup()
     git_repos = get_git_urls_from_file('./Berksfile')
     git_repos.append(get_local_repo_url())
     versions = {}
