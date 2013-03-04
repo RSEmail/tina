@@ -9,10 +9,10 @@ class CookbookRepo:
         self.metadata = CookbookMetadata(".tina/" + self.name + "/metadata.rb")
 
     def checkout(self):
-        repo = checkout_repo(self.url)
-        self.old_tag = get_tag_of_repo(repo)
+        self.repo = checkout_repo(self.url)
+        self.old_tag = get_tag_of_repo(self.repo)
         if self.old_tag:
-            self.changed = self.changed_since_last_tag(repo)
+            self.changed = self.changed_since_last_tag(self.repo)
         else:
             self.changed = False
         self.version_bump()
@@ -23,11 +23,13 @@ class CookbookRepo:
         return master.committed_date > last.committed_date
 
     def resolve_deps(self, versions):
-        self.metadata.inject_versions(self.new_tag, versions)
+        if self.old_tag != self.new_tag:
+            self.metadata.inject_versions(self.new_tag, versions)
+            create_tag(self.repo, self.new_tag)
 
     def commit(self):
         if self.old_tag != self.new_tag:
-            commit_and_push(self.name, self.new_tag)
+            commit_and_push(self.repo)
 
     def version_bump(self):
         if not self.old_tag:

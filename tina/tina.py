@@ -1,5 +1,6 @@
-import shutil
 import os
+import shutil
+import sys
 from CookbookRepo import *
 from CommunityCookbooks import *
 from GitLib import *
@@ -20,7 +21,8 @@ def cleanup():
 def build_repo_dict(git_urls):
     repos = {}
     for repo_url in git_urls:
-        repos[repo_url] = CookbookRepo(repo_url)
+        repo = CookbookRepo(repo_url)
+        repos[repo_url] = repo
     return repos
 
 def build_dependency_graph(repo_dict):
@@ -57,32 +59,43 @@ def resolve_dependencies(graph, repo):
         resolve_dependencies(graph, parent)
 
 def main():
-    print "Cloning repositories..."
-    cleanup()
-    git_repos = get_git_urls_from_file('./Berksfile')
-    git_repos.append(get_local_repo_url())
-    repo_dict = build_repo_dict(git_repos)
-    build_dependency_graph(repo_dict)
-
-    versions = {}
-    cookbook_names = []
-    print "Repository summary:"
-    for _,repo in repo_dict.iteritems():
-        if repo.changed:
-            print "%s: %s => %s" % (repo.name, repo.old_tag, repo.new_tag)
+    commit = False
+    for arg in sys.argv[1:]:
+        if arg == "--commit":
+            commit = True
         else:
-            print "%s: unchanged" % repo.name
+            print "option %s not recognized" % arg
+            sys.exit(1)
 
-        versions[repo.metadata.cookbook_name] = repo.new_tag
-        cookbook_names.extend(repo.metadata.depends)
+    if not commit: # This is a dry-run.
+        print "Cloning repositories..."
+        cleanup()
+        git_repos = get_git_urls_from_file('./Berksfile')
+        git_repos.append(get_local_repo_url())
+        repo_dict = build_repo_dict(git_repos)
+        build_dependency_graph(repo_dict)
 
-    cookbook_names = list(set(cookbook_names)) 
-    community_cookbooks = CommunityCookbooks(cookbook_names)
-    combined_versions = dict(versions.items() + community_cookbooks.versions.items())
+        versions = {}
+        cookbook_names = []
+        print "Repository summary:"
+        for _,repo in repo_dict.iteritems():
+            if repo.changed:
+                print "%s: %s => %s" % (repo.name, repo.old_tag, repo.new_tag)
+            else:
+                print "%s: unchanged" % repo.name
 
-    for _,repo in repo_dict.iteritems():
-        repo.resolve_deps(combined_versions)
-        repo.commit()
+            versions[repo.metadata.cookbook_name] = repo.new_tag
+            cookbook_names.extend(repo.metadata.depends)
+
+        cookbook_names = list(set(cookbook_names))
+        community_cookbooks = CommunityCookbooks(cookbook_names)
+        combined_versions = dict(versions.items() + community_cookbooks.versions.items())
+        for _,repo in repo_dict.iteritems():
+            repo.resolve_deps(combined_versions)
+    else:
+        for repo_name in os.listdir(".tina"):
+            commit_and_push(git.Repo(".tina/%s" % repo_name), repo_name)
+        cleanup()
 
 if __name__ == "__main__":
     main()
