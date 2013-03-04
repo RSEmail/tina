@@ -10,18 +10,18 @@ class CookbookMetadata:
     def parse_metadata(self):
         try:
             raw = open(self.filename, "r")
-            regex_name = re.compile(r'name *"(.*?)"')
-            regex_depends = re.compile(r'depends *"(.*?)"')
+            regex_name = re.compile(r'name\s+"(.*?)"')
+            regex_depends = re.compile(r'depends\s+"(.*?)"')
             for line in raw:
                 matches = regex_name.findall(line)
                 for word in matches:
                     if self.cookbook_name:
-                        raise SyntaxError("Metadata file has multiple 'name' sections: '%s'" % self.filename) 
+                        raise Exception("Metadata file has multiple 'name' "
+                                        "sections: '%s'" % self.filename)
                     self.cookbook_name = word
                 matches = regex_depends.findall(line)
                 for word in matches:
                     self.depends.append(word)
-
         except IOError as e:
             print "Unable to open file to parse it '{0}': '{1}'".format(self.filename, e.strerror)
             raise
@@ -34,20 +34,24 @@ class CookbookMetadata:
         content = metadata.readlines()
         metadata.close()
 
-        regex_depends = re.compile(r'depends *"(.*?)"')
-        regex_version = re.compile(r'version *"(.*?)"')
+        regex_depends = re.compile(r'depends\s+"(.*?)"')
+        regex_version = re.compile(r'version\s+"(.*?)"')
         new_content = []
         for line in content:
             version_match = regex_version.match(line)
             if version_match:
-                line = ("version          \"%s\"" % tagged_version)
+                line = line.replace(version_match.group(1), tagged_version)
+
             depends_match = regex_depends.match(line)
             if depends_match:
-                cookbook_name = depends_match.group(1)
-                if not cookbook_name in versions:
-                    raise SyntaxError("Missing version number for this cookbook '%s' " % cookbook_name)
+                cookbook = depends_match.group(1)
+                if not cookbook in versions:
+                    raise Exception("Missing version number for cookbook '%s' "
+                                    % cookbook)
                 else:
-                    line = ("depends          \"%s\", \"= %s\"\n" % (cookbook_name, versions[cookbook_name]))
+                    version = versions[cookbook]
+                    line = line.replace(r'"%s"' % cookbook,
+                                        r'"%s", "= %s"' % (cookbook, version))
             new_content.append(line)
 
         metadata = open(self.filename, "w")
