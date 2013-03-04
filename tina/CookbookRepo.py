@@ -9,7 +9,6 @@ class CookbookRepo:
         self.metadata = CookbookMetadata(".tina/" + self.name + "/metadata.rb")
 
     def checkout(self):
-        print "Cloning " + self.name + "..."
         repo = checkout_repo(self.url)
         self.old_tag = get_tag_of_repo(repo)
         if self.old_tag:

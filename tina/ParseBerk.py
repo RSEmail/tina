@@ -12,7 +12,7 @@ def normalize_urls_to_git(urls):
         if not parts.hostname  or not parts.path:
             raise SyntaxError("URL is malformed: '%s'" % url)
         norm = "git@" + parts.hostname
-        norm += ":" + parts.path
+        norm += ":" + parts.path.lstrip("/")
         if not norm.endswith(".git"):
             norm += ".git"
         normalized_urls.append(norm)
