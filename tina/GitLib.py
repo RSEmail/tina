@@ -50,7 +50,3 @@ def commit_and_push(repo_name, tag_num):
     except git.GitCommandError as e:
         print ("Problem committing to '%s', error was '%s'" % (repo_name, e.command))
         raise
-
-
-if __name__ == '__main__':
-    pass

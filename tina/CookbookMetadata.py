@@ -57,11 +57,3 @@ class CookbookMetadata:
         metadata = open(self.filename, "w")
         metadata.write("".join(new_content))
         metadata.close()
-        
-
-if __name__ == "__main__":
-    filename = "metadata.rb"
-    metadata = CookbookMetadata(filename)
-    versions = {"tina": "1.0.1", "test_tina": "2.0.2", "yum": "3.0.0"}
-    metadata.inject_versions(versions)
-

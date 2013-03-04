@@ -33,9 +33,3 @@ def get_urls_from_file(filename):
     else:
         raw.close()
     return urls
-
-if __name__ == "__main__":
-    filename = "Berksfile"
-    urls = get_git_urls_from_file(filename)
-    print urls 
-

@@ -35,9 +35,3 @@ class CommunityCookbooks:
         except urllib2.HTTPError as e: 
             if e.code == 404:
                 return None
-
-if __name__ == "__main__":
-    cookbook_names = {"yum", "rjjkfd", "apache"}
-    test = CommunityCookbooks(cookbook_names)
-    print test.versions
-
