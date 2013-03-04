@@ -5,6 +5,7 @@ def get_git_urls_from_file(filename):
     urls = get_urls_from_file(filename)
     return normalize_urls_to_git(urls)
 
+#TODO: always fails if urls are already git@github.com:repo.git
 def normalize_urls_to_git(urls):
     normalized_urls = []
     for url in urls:
