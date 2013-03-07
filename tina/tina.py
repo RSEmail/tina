@@ -95,7 +95,6 @@ def main():
     else:
         for repo_name in os.listdir(".tina"):
             commit_and_push(git.Repo(".tina/%s" % repo_name), repo_name)
-        cleanup()
 
 if __name__ == "__main__":
     main()
