@@ -50,8 +50,8 @@ class CookbookMetadata:
                                     % cookbook)
                 else:
                     version = versions[cookbook]
-                    line = line.replace(r'"%s"' % cookbook,
-                                        r'"%s", "= %s"' % (cookbook, version))
+                    line = re.sub(r'[\'\"]%s[\'\"]' % cookbook,
+                                  r'"%s", "= %s"' % (cookbook, version), line)
             new_content.append(line)
 
         metadata = open(self.filename, "w")
