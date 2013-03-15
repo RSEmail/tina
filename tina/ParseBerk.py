@@ -23,7 +23,7 @@ def get_urls_from_file(filename):
     urls = []
     try:
         raw = open(filename, "r")
-        regex = re.compile(r'"[a-zA-Z]*://.*?"')
+        regex = re.compile(r'[\'\"][a-zA-Z]*://.*?[\'\"]')
         for line in raw:
             matches = regex.findall(line)
             for word in matches:

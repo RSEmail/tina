@@ -10,8 +10,8 @@ class CookbookMetadata:
     def parse_metadata(self):
         try:
             raw = open(self.filename, "r")
-            regex_name = re.compile(r'name\s+"(.*?)"')
-            regex_depends = re.compile(r'depends\s+"(.*?)"')
+            regex_name = re.compile(r'name\s+[\'\"](.*?)[\'\"]')
+            regex_depends = re.compile(r'depends\s+[\'\"](.*?)[\'\"]')
             for line in raw:
                 matches = regex_name.findall(line)
                 for word in matches:
@@ -34,8 +34,8 @@ class CookbookMetadata:
         content = metadata.readlines()
         metadata.close()
 
-        regex_depends = re.compile(r'depends\s+"(.*?)"')
-        regex_version = re.compile(r'version\s+"(.*?)"')
+        regex_depends = re.compile(r'depends\s+[\'\"](.*?)[\'\"]')
+        regex_version = re.compile(r'version\s+[\'\"](.*?)[\'\"]')
         new_content = []
         for line in content:
             version_match = regex_version.match(line)
