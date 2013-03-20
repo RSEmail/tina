@@ -25,7 +25,6 @@ class CookbookRepo:
     def resolve_deps(self, versions):
         if self.old_tag != self.new_tag:
             self.metadata.inject_versions(self.new_tag, versions)
-            create_tag(self.repo, self.new_tag)
 
     def commit(self):
         if self.old_tag != self.new_tag:

@@ -4,6 +4,7 @@ class CookbookMetadata:
     def __init__(self, filename):
         self.filename = filename
         self.cookbook_name = None
+        self.version = None
         self.depends = []
         self.parse_metadata();
 
@@ -12,16 +13,28 @@ class CookbookMetadata:
             raw = open(self.filename, "r")
             regex_name = re.compile(r'name\s+[\'\"](.*?)[\'\"]')
             regex_depends = re.compile(r'depends\s+[\'\"](.*?)[\'\"]')
+            regex_version = re.compile(r'version\s+[\'\"](.*?)[\'\"]')
             for line in raw:
+                # Find the name of the cookbook.
                 matches = regex_name.findall(line)
                 for word in matches:
                     if self.cookbook_name:
                         raise Exception("Metadata file has multiple 'name' "
                                         "sections: '%s'" % self.filename)
                     self.cookbook_name = word
+
+                # Find the list of dependencies.
                 matches = regex_depends.findall(line)
                 for word in matches:
                     self.depends.append(word)
+
+                # Find the current version of the cookbook.
+                matches = regex_version.match(line)
+                if matches:
+                    if self.version:
+                        raise Exception("Metadata file has multiple 'version' "
+                            "sections: '%s'" % self.filename)
+                    self.version = matches.group(1)
         except IOError as e:
             print "Unable to open file to parse it '{0}': '{1}'".format(self.filename, e.strerror)
             raise

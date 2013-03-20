@@ -2,6 +2,7 @@ import git
 import os
 import re
 from tina import *
+from CookbookMetadata import *
 
 def checkout_repo(repo_url):
     regex = re.compile(".*/(.+?)\.git.*")
@@ -47,7 +48,10 @@ def create_tag(repo, tag_num):
 def commit_and_push(repo, name):
     try:
         print "Pushing %s..." % name
-        repo.remotes.origin.push('--tags')
+        tag = CookbookMetadata(".tina/" + name + "/metadata.rb").version
+        if not tag == "0.0.0":
+            create_tag(repo, tag)
+            repo.remotes.origin.push('--tags')
     except git.GitCommandError as e:
         print ("Problem committing to '%s', error was '%s'" % (name, e.command))
         raise
