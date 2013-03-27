@@ -4,15 +4,10 @@ import re
 from cookbook_metadata import *
 from tag import Tag
 
-def checkout_repo(repo_url):
-    regex = re.compile(".*/(.+?)\.git.*")
-    match = regex.match(repo_url)
-    repo_name = ""
-    if match:
-        local_path = ".tina/" + match.group(1)
-        return git.Repo.clone_from(repo_url, local_path)
-    else:
-        raise SyntaxError("URL is malformed: '%s'" % url)
+def checkout_repo(repo_name, repo_url):
+    local_path = ".tina/" + repo_name
+    print("Cloning %s" % repo_url)
+    return git.Repo.clone_from(repo_url, local_path)
 
 def get_tag_of_repo(repo):
     tags = repo.tags

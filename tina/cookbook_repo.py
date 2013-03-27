@@ -1,26 +1,38 @@
 import copy
 import git
+import shutil
 from cookbook_metadata import *
+from berkslib import *
 from gitlib import *
 
 class CookbookRepo:
-    def __init__(self, name, url=None):
-        self.name = name
+    def __init__(self, local_dir, url=None, force_checkout=False):
+        self.local_dir = local_dir
+        self.url = None
         if url:
-            self.url = url
-            self.checkout()
-        else:
-            self.repo = git.Repo(".tina/" + self.name)
-        self.metadata = CookbookMetadata(".tina/" + self.name + "/metadata.rb")
+            self.url = normalize_urls_to_git(url)
+        self.changed = False
+        self.using_git = False
+        self.refresh_metadata()
 
     def checkout(self):
-        self.repo = checkout_repo(self.url)
-        self.old_tag = get_tag_of_repo(self.repo)
-        if self.old_tag:
-            self.changed = self.changed_since_last_tag(self.repo)
+        if self.url:
+            if os.path.exists(".tina/" + self.local_dir):
+                shutil.rmtree(".tina/" + self.local_dir)
+            self.using_git = True
+            self.repo = checkout_repo(self.local_dir, self.url)
+            self.refresh_metadata()
+
+    def refresh_metadata(self):
+        self.metadata = CookbookMetadata(".tina/" + self.local_dir + "/metadata.rb")
+        if self.using_git:
+            self.old_tag = get_tag_of_repo(self.repo)
+            if self.old_tag:
+                self.changed = self.changed_since_last_tag(self.repo)
+                self.version_bump()
         else:
-            self.changed = False
-        self.version_bump()
+            self.old_tag = self.metadata.version
+            self.new_tag = self.old_tag
 
     def changed_since_last_tag(self, repo):
         master = repo.commit("master")
@@ -33,7 +45,7 @@ class CookbookRepo:
 
     def commit(self):
         if self.changed:
-            commit_and_push(self.repo, self.name, self.new_tag)
+            commit_and_push(self.repo, self.local_dir, self.new_tag)
 
     def version_bump(self):
         if self.changed:
