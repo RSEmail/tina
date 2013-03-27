@@ -1,5 +1,5 @@
 import unittest
-import ParseBerk
+import parse_berk
 
 class TestParseBerk(unittest.TestCase):
     def test_normalize_urls_to_git(self):

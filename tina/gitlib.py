@@ -2,7 +2,7 @@ import git
 import os
 import re
 from tina import *
-from CookbookMetadata import *
+from cookbook_metadata import *
 
 def checkout_repo(repo_url):
     regex = re.compile(".*/(.+?)\.git.*")

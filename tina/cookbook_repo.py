@@ -1,5 +1,5 @@
-from GitLib import *
-from CookbookMetadata import *
+from gitlib import *
+from cookbook_metadata import *
 
 class CookbookRepo:
     def __init__(self, url):

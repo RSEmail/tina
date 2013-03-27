@@ -1,10 +1,10 @@
 import os
 import shutil
 import sys
-from CookbookRepo import *
-from CommunityCookbooks import *
-from GitLib import *
-from ParseBerk import *
+from cookbook_repo import *
+from community_cookbooks import *
+from gitlib import *
+from parse_berk import *
 
 def tag_compare(x, y):
     x_nums = x.split(".")
