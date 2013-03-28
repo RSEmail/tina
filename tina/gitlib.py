@@ -10,6 +10,7 @@ def checkout_repo(repo_url):
     repo_name = ""
     if match:
         local_path = ".tina/" + match.group(1)
+        print("Cloning %s" % repo_url)
         return git.Repo.clone_from(repo_url, local_path)
     else:
         raise SyntaxError("URL is malformed: '%s'" % url)

@@ -2,8 +2,10 @@ import re
 from urlparse import urlparse
 from subprocess import check_output
 import json
+from tag import Tag
 
-def run_berks():
+def cookbooks_from_berks():
+    print "Running berks install"
     data = check_output(["berks", "install", "--path", ".tina/berks", "--format=json"])
     cookbooks = json.loads(data)
     for cookbook in cookbooks["cookbooks"]:
@@ -21,6 +23,7 @@ def run_berks():
                 
         cookbook["rw_url"] = rw_url
         cookbook["taggable"] = taggable
+        cookbook["tag"] = Tag(cookbook["version"])
 
     return cookbooks["cookbooks"]
 
