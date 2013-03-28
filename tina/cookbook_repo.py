@@ -1,5 +1,12 @@
-from gitlib import *
+import copy
 from cookbook_metadata import *
+from gitlib import *
+
+def get_name_from_url(repo_url):
+    match = re.match(".*/(.+?)\.git.*", repo_url)
+    if not match:
+        raise Exception("Error: git URL is malformed: '%s'" % repo_url)
+    return match.group(1)
 
 class CookbookRepo:
     def __init__(self, url):
@@ -19,7 +26,7 @@ class CookbookRepo:
 
     def changed_since_last_tag(self, repo):
         master = repo.commit("master")
-        last = repo.commit("v" + self.old_tag)
+        last = repo.commit(str(self.old_tag))
         return master.committed_date > last.committed_date
 
     def resolve_deps(self, versions):
@@ -31,12 +38,8 @@ class CookbookRepo:
             commit_and_push(self.repo)
 
     def version_bump(self):
-        if not self.old_tag:
-            self.old_tag = "1.0.0"
-
         if self.changed:
-            nums = self.old_tag.split(".")
-            nums[-1] = str(int(nums[-1]) + 1)
-            self.new_tag = ".".join(nums)
+            self.new_tag = copy.copy(self.old_tag)
+            self.new_tag.build_bump()
         else:
             self.new_tag = self.old_tag

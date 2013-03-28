@@ -1,8 +1,8 @@
 import git
 import os
 import re
-from tina import *
 from cookbook_metadata import *
+from tag import Tag
 
 def checkout_repo(repo_url):
     regex = re.compile(".*/(.+?)\.git.*")
@@ -14,25 +14,19 @@ def checkout_repo(repo_url):
     else:
         raise SyntaxError("URL is malformed: '%s'" % url)
 
-def get_name_from_url(repo_url):
-    match = re.match(".*/(.+?)\.git.*", repo_url)
-    if not match:
-        raise Exception("Error: git URL is malformed: '%s'" % repo_url)
-    return match.group(1)
-
 def get_tag_of_repo(repo):
     tags = repo.tags
     if len(tags) is 0:
         return None
 
-    tag_regex = re.compile("v(\d+\.\d+\.\d+)")
     tag_list = []
     for tag in tags:
-        tag_match = tag_regex.match(str(tag))
-        if tag_match:
-            tag_list.append(tag_match.group(1))
-    tag_list.sort(cmp=tag_compare)
+        try:
+            tag_list.append(Tag(str(tag)))
+        except Exception:
+            pass
 
+    tag_list.sort()
     return tag_list[-1]
 
 def get_local_repo_url():

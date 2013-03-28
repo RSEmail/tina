@@ -53,7 +53,7 @@ class CookbookMetadata:
         for line in content:
             version_match = regex_version.match(line)
             if version_match:
-                line = line.replace(version_match.group(1), tagged_version)
+                line = line.replace(version_match.group(1), str(tagged_version))
 
             depends_match = regex_depends.match(line)
             if depends_match:
