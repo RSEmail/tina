@@ -20,6 +20,8 @@ def cookbooks_from_berks():
                 match = regex.match(rw_url)
                 if match:
                     taggable = True
+        else:
+            cookbook["location"] = "Opscode"
                 
         cookbook["rw_url"] = rw_url
         cookbook["taggable"] = taggable
