@@ -1,16 +1,6 @@
-from tina import * 
-import urllib2
 import json
-
-def tag_compare(x, y):
-    x_nums = x.split(".")
-    y_nums = y.split(".")
-    for (x,y) in zip(x_nums,y_nums):
-        if x != y:
-            return int(x) - int(y)
-    return 0
-
-
+import urllib2
+from tag import Tag
 
 class CommunityCookbooks:
     def __init__(self, cookbook_names):
@@ -19,7 +9,6 @@ class CommunityCookbooks:
             version = self.get_opscode_version(cookbook)
             if version:
                 self.versions[cookbook] = version
-                print ("Found community cookbook '%s': %s" % (cookbook, version))
         
     def get_opscode_version(self, cookbook):
         try:
@@ -28,10 +17,10 @@ class CommunityCookbooks:
             versions = []
             for url in data["versions"]:
                 version=url.encode('ascii','ignore').split("/")[-1].replace("_", ".")
-                versions.append(version)
-            versions.sort(cmp=tag_compare)
+                versions.append(Tag(version))
+            versions.sort()
             newest = versions[-1]
-            return newest 
+            return str(newest)
         except urllib2.HTTPError as e: 
             if e.code == 404:
                 return None
