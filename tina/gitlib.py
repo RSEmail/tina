@@ -35,18 +35,16 @@ def get_local_repo_url():
     origin = repo.remotes.origin
     return origin.url
 
-def create_tag(repo, tag_num):
+def create_tag(repo, tag):
     repo.index.add(['metadata.rb'])
-    repo.index.commit('Tagging for %s' % tag_num)
-    repo.create_tag('v' + tag_num)
+    repo.index.commit('Tagging for %s.' % tag)
+    repo.create_tag(tag)
 
-def commit_and_push(repo, name):
+def commit_and_push(repo, name, tag):
     try:
         print "Pushing %s..." % name
-        tag = CookbookMetadata(".tina/" + name + "/metadata.rb").version
-        if not tag == "0.0.0":
-            create_tag(repo, tag)
-            repo.remotes.origin.push('--tags')
+        create_tag(repo, str(tag))
+        repo.remotes.origin.push('--tags')
     except git.GitCommandError as e:
         print ("Problem committing to '%s', error was '%s'" % (name, e.command))
         raise

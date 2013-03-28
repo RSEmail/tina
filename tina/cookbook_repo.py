@@ -1,18 +1,16 @@
 import copy
+import git
 from cookbook_metadata import *
 from gitlib import *
 
-def get_name_from_url(repo_url):
-    match = re.match(".*/(.+?)\.git.*", repo_url)
-    if not match:
-        raise Exception("Error: git URL is malformed: '%s'" % repo_url)
-    return match.group(1)
-
 class CookbookRepo:
-    def __init__(self, url):
-        self.url = url
-        self.name = get_name_from_url(url)
-        self.checkout()
+    def __init__(self, name, url=None):
+        self.name = name
+        if url:
+            self.url = url
+            self.checkout()
+        else:
+            self.repo = git.Repo(".tina/" + self.name)
         self.metadata = CookbookMetadata(".tina/" + self.name + "/metadata.rb")
 
     def checkout(self):
@@ -30,12 +28,12 @@ class CookbookRepo:
         return master.committed_date > last.committed_date
 
     def resolve_deps(self, versions):
-        if self.old_tag != self.new_tag:
+        if self.changed:
             self.metadata.inject_versions(self.new_tag, versions)
 
     def commit(self):
-        if self.old_tag != self.new_tag:
-            commit_and_push(self.repo)
+        if self.changed:
+            commit_and_push(self.repo, self.name, self.new_tag)
 
     def version_bump(self):
         if self.changed:

@@ -12,11 +12,11 @@ def main():
             print "option %s not recognized" % arg
             sys.exit(1)
 
-    if not commit: # This is a dry-run.
+    if commit:
+        commit_and_push()
+    else:
+        # This is a dry-run.
         checkout_and_parse(".")
-    #else:
-    #    for repo_name in os.listdir(".tina"):
-    #        commit_and_push(git.Repo(".tina/%s" % repo_name), repo_name)
 
 if __name__ == "__main__":
     main()

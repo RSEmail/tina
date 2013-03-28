@@ -21,6 +21,9 @@ class Tag:
     def __repr__(self):
         return "%s%d.%d.%d" % (self.pretext, self.major, self.minor, self.build)
 
+    def version_str(self):
+        return "%d.%d.%d" % (self.major, self.minor, self.build)
+
     def build_bump(self):
         self.build = self.build + 1
 
