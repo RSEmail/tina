@@ -4,8 +4,7 @@ import shutil
 import sys
 from cookbook_repo import *
 from gitlib import *
-from parse_berk import *
-from community_cookbooks import *
+from berkslib import *
 from tag import Tag
 
 def tag_compare(x, y):
@@ -20,26 +19,18 @@ def cleanup():
     if os.path.exists(".tina"):
         shutil.rmtree(".tina")
 
-def recurse_discover_cookbooks(available_cookbooks, taggable_cookbooks, dependent_cookbooks, root_repo):
+def recurse_discover_cookbooks(available_cookbooks, repos, root_repo):
     for depends in root_repo.metadata.depends:
-        dependent_cookbooks[depends] = True
         found = False
-        for cookbook in available_cookbooks:
-            if cookbook["name"] == depends:
+        for repo_name, cookbook in available_cookbooks.items():
+            if cookbook.metadata.cookbook_name == depends:
                 found = True
-                if cookbook["taggable"]:
-                    if not cookbook["name"] in taggable_cookbooks.keys():
-                        taggable_cookbooks[cookbook["name"]] = CookbookRepo(get_name_from_url(cookbook["rw_url"]), cookbook["rw_url"])
-                        recurse_discover_cookbooks(available_cookbooks, taggable_cookbooks, dependent_cookbooks, taggable_cookbooks[cookbook["name"]])
+                repo = CookbookRepo(cookbook.repo_name, cookbook.url, True)
+                repos[cookbook.metadata.cookbook_name] = repo
+                recurse_discover_cookbooks(available_cookbooks, repos, repo)
         if not found:
             print("%s depends on %s but it is not available" % (root_repo.metadata.cookbook_name, depends))
             exit()
-
-def get_name_from_url(repo_url):
-    match = re.match(".*/(.+?)\.git.*", repo_url)
-    if not match:
-        raise Exception("Error: git URL is malformed: '%s'" % repo_url)
-    return match.group(1)
 
 def build_dependency_graph(repo_dict):
     parents = {}
@@ -76,54 +67,42 @@ def resolve_dependencies(graph, repo):
 def checkout_and_parse(path):
     cleanup()
 
-    available_cookbooks = cookbooks_from_berks()
+    available_repos = repos_from_berks()
+    available_cookbooks = {}
+    for repo_name, url in available_repos.items():
+        cookbook = CookbookRepo(repo_name, url)
+        available_cookbooks[cookbook.metadata.cookbook_name] = cookbook
+
     local_url = get_local_repo_url()
     local_name = get_name_from_url(local_url)
-    root_repo = CookbookRepo(local_name, local_url)
+    root_repo = CookbookRepo(local_name, local_url, True)
 
-    taggable_repos = {}
-    dependent_cookbooks = {}
-    taggable_repos[root_repo.metadata.cookbook_name] = root_repo
-    recurse_discover_cookbooks(available_cookbooks, taggable_repos, dependent_cookbooks, root_repo) 
+    repos = {}
+    repos[root_repo.metadata.cookbook_name] = root_repo
+    recurse_discover_cookbooks(available_cookbooks, repos, root_repo) 
 
-    build_dependency_graph(taggable_repos)
+    build_dependency_graph(repos)
 
-    print_summary(taggable_repos, available_cookbooks, dependent_cookbooks)
-    generate_tinafile(taggable_repos, available_cookbooks, dependent_cookbooks)
+    print_summary(repos)
+    generate_tinafile(repos)
 
-def print_summary(taggable_repos, available_cookbooks, dependent_cookbooks):
+def print_summary(repos):
     changed_repos = {}
-    for _,repo in taggable_repos.items():
+    for _,repo in repos.items():
         format_str = "+%s (%s): %s" if repo.changed else "%s (%s): %s"
         print(format_str % (repo.metadata.cookbook_name, repo.new_tag, repo.url))
-        changed_repos[repo.metadata.cookbook_name] = repo
-
-    for cookbook_name, _ in dependent_cookbooks.items():
-        if not cookbook_name in changed_repos:
-            for available in available_cookbooks:
-                if available["name"] == cookbook_name:
-                    print("%s (%s): %s" % (available["name"], available["version"], available["location"]))
 
 
-def generate_tinafile(taggable_repos, available_cookbooks, dependent_cookbooks):
+def generate_tinafile(repos):
     tinafile = open(".tina/Tinafile", "w")
 
     tinafile.write("# These are taggable cookbook repos. Repos prepended\n"
         "# with a + will have versions pinned, be tagged, and\n"
         "# will be pushed to their upstream remotes.\n")
    
-    changed_repos = {}
-    for _,repo in taggable_repos.items():
+    for _,repo in repos.items():
         format_str = "+%s: %s\n" if repo.changed else "%s: %s\n"
         tinafile.write(format_str % (repo.metadata.cookbook_name, repo.new_tag))
-        changed_repos[repo.metadata.cookbook_name] = repo
-
-    tinafile.write("# Dependency cookbooks:\n")
-    for cookbook_name, _ in dependent_cookbooks.items():
-        if not cookbook_name in changed_repos:
-            for available in available_cookbooks:
-                if available["name"] == cookbook_name:
-                    tinafile.write("%s: %s\n" % (available["name"], available["version"]))
 
     tinafile.close()
 

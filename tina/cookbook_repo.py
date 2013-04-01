@@ -1,26 +1,37 @@
 import copy
 import git
+import shutil
 from cookbook_metadata import *
 from gitlib import *
 
 class CookbookRepo:
-    def __init__(self, name, url=None):
-        self.name = name
-        if url:
-            self.url = url
+    def __init__(self, repo_name, url=None, checkout=False):
+        self.repo_name = repo_name
+        self.url = url
+        self.changed = False
+        self.using_git = False
+        if checkout and url:
+            self.using_git = True 
+            if os.path.exists(".tina/" + repo_name):
+                shutil.rmtree(".tina/" + repo_name)
             self.checkout()
         else:
-            self.repo = git.Repo(".tina/" + self.name)
-        self.metadata = CookbookMetadata(".tina/" + self.name + "/metadata.rb")
+            self.repo = git.Repo(".tina/" + self.repo_name)
+        self.metadata = CookbookMetadata(".tina/" + self.repo_name + "/metadata.rb")
+        self.set_tag()
 
     def checkout(self):
-        self.repo = checkout_repo(self.url)
-        self.old_tag = get_tag_of_repo(self.repo)
-        if self.old_tag:
-            self.changed = self.changed_since_last_tag(self.repo)
+        self.repo = checkout_repo(repo_name, self.url)
+
+    def set_tag(self):
+        if self.using_git:
+            self.old_tag = get_tag_of_repo(self.repo)
+            if self.old_tag:
+                self.changed = self.changed_since_last_tag(self.repo)
+                self.version_bump()
         else:
-            self.changed = False
-        self.version_bump()
+            self.old_tag = self.metadata.version
+            self.new_tag = self.old_tag
 
     def changed_since_last_tag(self, repo):
         master = repo.commit("master")
@@ -33,7 +44,7 @@ class CookbookRepo:
 
     def commit(self):
         if self.changed:
-            commit_and_push(self.repo, self.name, self.new_tag)
+            commit_and_push(self.repo, self.repo_name, self.new_tag)
 
     def version_bump(self):
         if self.changed:
