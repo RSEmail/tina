@@ -22,12 +22,13 @@ def cleanup():
 def recurse_discover_cookbooks(available_cookbooks, repos, root_repo):
     for depends in root_repo.metadata.depends:
         found = False
-        for repo_name, cookbook in available_cookbooks.items():
+        for local_dir, cookbook in available_cookbooks.items():
             if cookbook.metadata.cookbook_name == depends:
                 found = True
-                repo = CookbookRepo(cookbook.repo_name, cookbook.url, True)
-                repos[cookbook.metadata.cookbook_name] = repo
-                recurse_discover_cookbooks(available_cookbooks, repos, repo)
+                if not cookbook.local_dir in repos:
+                    cookbook.checkout()
+                    repos[cookbook.metadata.cookbook_name] = cookbook
+                    recurse_discover_cookbooks(available_cookbooks, repos, cookbook)
         if not found:
             print("%s depends on %s but it is not available" % (root_repo.metadata.cookbook_name, depends))
             exit()
@@ -69,17 +70,22 @@ def checkout_and_parse(path):
 
     available_repos = repos_from_berks()
     available_cookbooks = {}
-    for repo_name, url in available_repos.items():
-        cookbook = CookbookRepo(repo_name, url)
-        available_cookbooks[cookbook.metadata.cookbook_name] = cookbook
 
-    local_url = get_local_repo_url()
-    local_name = get_name_from_url(local_url)
-    root_repo = CookbookRepo(local_name, local_url, True)
+    root_url = get_local_repo_url()
+    root_local_dir = get_name_from_url(root_url)
 
+    available_repos[root_local_dir] = root_url
     repos = {}
-    repos[root_repo.metadata.cookbook_name] = root_repo
-    recurse_discover_cookbooks(available_cookbooks, repos, root_repo) 
+
+    for local_dir, url in available_repos.items():
+        cookbook = CookbookRepo(local_dir, url)
+        available_cookbooks[cookbook.metadata.cookbook_name] = cookbook
+        if local_dir == root_local_dir:
+            root_cookbook = cookbook
+            repos[root_cookbook.metadata.cookbook_name] = root_cookbook
+            root_cookbook.checkout()
+
+    recurse_discover_cookbooks(available_cookbooks, repos, root_cookbook) 
 
     build_dependency_graph(repos)
 

@@ -15,27 +15,20 @@ def repos_from_berks():
     print "Running berks install"
     berks_output = check_output(["berks", "install", "--path", ".tina", "--format=json"])
     data = json.loads(berks_output)
-    print data
     repos = {}
     for repo in data["cookbooks"]:
         url = None
         if "location" in repo.keys():
             url = get_url_from_string(repo["location"])
-            if url:
-                rw_url = normalize_urls_to_git(url)
-                if rw_url:
-                    url = rw_url
-        if url:
-            name = get_name_from_url(url)
-        else:
-            name = repo["name"]
-        repos[name] = url
+        # name is the local_dir the repo was checked out into
+        repos[repo["name"]] = url
     return repos
-
 
 def normalize_urls_to_git(url):
     if url == None:
         return None
+    if re.match(r'git@.*:.*', url):
+        return url
     parts = urlparse(url)
     if not parts.hostname or not parts.path:
         raise SyntaxError("URL is malformed: '%s'" % url)

@@ -2,28 +2,29 @@ import copy
 import git
 import shutil
 from cookbook_metadata import *
+from berkslib import *
 from gitlib import *
 
 class CookbookRepo:
-    def __init__(self, repo_name, url=None, checkout=False):
-        self.repo_name = repo_name
-        self.url = url
+    def __init__(self, local_dir, url=None, force_checkout=False):
+        self.local_dir = local_dir
+        self.url = None
+        if url:
+            self.url = normalize_urls_to_git(url)
         self.changed = False
         self.using_git = False
-        if checkout and url:
-            self.using_git = True 
-            if os.path.exists(".tina/" + repo_name):
-                shutil.rmtree(".tina/" + repo_name)
-            self.checkout()
-        else:
-            self.repo = git.Repo(".tina/" + self.repo_name)
-        self.metadata = CookbookMetadata(".tina/" + self.repo_name + "/metadata.rb")
-        self.set_tag()
+        self.refresh_metadata()
 
     def checkout(self):
-        self.repo = checkout_repo(repo_name, self.url)
+        if self.url:
+            if os.path.exists(".tina/" + self.local_dir):
+                shutil.rmtree(".tina/" + self.local_dir)
+            self.using_git = True
+            self.repo = checkout_repo(self.local_dir, self.url)
+            self.refresh_metadata()
 
-    def set_tag(self):
+    def refresh_metadata(self):
+        self.metadata = CookbookMetadata(".tina/" + self.local_dir + "/metadata.rb")
         if self.using_git:
             self.old_tag = get_tag_of_repo(self.repo)
             if self.old_tag:
@@ -44,7 +45,7 @@ class CookbookRepo:
 
     def commit(self):
         if self.changed:
-            commit_and_push(self.repo, self.repo_name, self.new_tag)
+            commit_and_push(self.repo, self.local_dir, self.new_tag)
 
     def version_bump(self):
         if self.changed:
