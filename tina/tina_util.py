@@ -30,9 +30,11 @@ def recurse_discover_cookbooks(available_cookbooks, repos, root_repo):
                 if not cookbook.local_dir in repos:
                     cookbook.checkout()
                     repos[cookbook.name] = cookbook
-                    recurse_discover_cookbooks(available_cookbooks, repos, cookbook)
+                    recurse_discover_cookbooks(available_cookbooks, repos,
+                        cookbook)
         if not found:
-            print "%s depends on %s but it is not available" % (root_repo.name, depends)
+            print "%s depends on %s but it is not available" %
+                (root_repo.name, depends)
             exit()
 
 def build_dependency_graph(repo_dict):
@@ -105,11 +107,13 @@ def print_summary(repos):
     for i, repo in enumerate(repos):
         if repo.url:
             if repo.changed:
-                print "%d. %s: %s => %s" % ((i+1, repo.name, repo.old_tag, repo.new_tag))
+                print "%d. %s: %s => %s" % ((i+1, repo.name, repo.old_tag,
+                    repo.new_tag))
             else:
                 print "%d. %s: unchanged" % (i+1, repo.name)
         else:
-            print "%d. %s will be pinned at %s" % (i+1, repo.name, repo.new_tag)
+            print "%d. %s will be pinned at %s" % (i+1, repo.name,
+                repo.new_tag)
 
 
 def generate_tinafile(repos):
@@ -126,7 +130,8 @@ def generate_tinafile(repos):
     tinafile.close()
 
 def gather_user_input(repos):
-    prompt = "Enter a repository index to modify, 'p' to print summary, 'q' to quit: "
+    prompt = "Enter a repository index to modify, 'p' to print summary, "
+        "'q' to quit: "
     while True:
         line = raw_input(prompt)
         if line == "q": break
@@ -187,7 +192,8 @@ def modify_unchanged_repo(repo):
         print "Unrecognized option: %s" % user_input
 
 def modify_community_cookbook(repo):
-    print "%s is a community cookbook, and will be pinned at %s" % (repo.name, repo.new_tag)
+    print "%s is a community cookbook, and will be pinned at %s" %
+        (repo.name, repo.new_tag)
     print "1. Modify pinned version"
     print "2. Do nothing"
 

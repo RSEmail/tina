@@ -39,7 +39,8 @@ class CookbookMetadata:
                     self.version = Tag(matches.group(1))
 
         except IOError as e:
-            print "Unable to open file to parse it '{0}': '{1}'".format(self.filename, e.strerror)
+            print "Unable to open file to parse it '{0}': "
+                "'{1}'".format(self.filename, e.strerror)
             raise
         else:
             raw.close()

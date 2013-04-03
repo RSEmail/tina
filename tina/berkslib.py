@@ -13,7 +13,8 @@ def get_name_from_url(repo_url):
 
 def repos_from_berks():
     print "Running berks install"
-    berks_output = check_output(["berks", "install", "--path", ".tina", "--format=json"])
+    berks_output = check_output(["berks", "install", "--path", ".tina",
+        "--format=json"])
     data = json.loads(berks_output)
     repos = {}
     for repo in data["cookbooks"]:

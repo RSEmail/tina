@@ -19,7 +19,8 @@ class Tag:
             return self.build < other.build
 
     def __repr__(self):
-        return "%s%d.%d.%d" % (self.pretext, self.major, self.minor, self.build)
+        return "%s%d.%d.%d" % (self.pretext, self.major, self.minor,
+            self.build)
 
     def version_str(self):
         return "%d.%d.%d" % (self.major, self.minor, self.build)
