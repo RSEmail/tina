@@ -17,14 +17,16 @@ class CookbookRepo:
 
     def checkout(self):
         if self.url:
-            if os.path.exists(".tina/" + self.local_dir):
-                shutil.rmtree(".tina/" + self.local_dir)
+            path = os.path.join(".tina", self.local_dir)
+            if os.path.exists(path):
+                shutil.rmtree(path)
             self.using_git = True
             self.repo = checkout_repo(self.local_dir, self.url)
             self.refresh_metadata()
 
     def refresh_metadata(self):
         self.metadata = CookbookMetadata(self.local_dir)
+        self.name = self.metadata.cookbook_name
         if self.using_git:
             self.old_tag = get_tag_of_repo(self.repo)
             if self.old_tag:

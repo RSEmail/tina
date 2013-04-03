@@ -27,7 +27,7 @@ def repos_from_berks():
 def normalize_urls_to_git(url):
     if url == None:
         return None
-    if re.match(r'git@.*:.*', url):
+    if re.match("git@.*:.*", url):
         return url
     parts = urlparse(url)
     if not parts.hostname or not parts.path:
@@ -39,9 +39,9 @@ def normalize_urls_to_git(url):
     return norm
 
 def get_url_from_string(line):
-    regex = re.compile(r'.*[\'\"]([a-zA-Z]*://.*?)[\'\"]')
+    regex = re.compile(".*[\'\"]([a-zA-Z]*://.*?)[\'\"]")
     match = regex.match(line)
     if not match:
         return None
     word = match.group(1)
-    return (word.replace('\"',''))
+    return (word.replace("\"",""))

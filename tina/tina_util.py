@@ -25,14 +25,14 @@ def recurse_discover_cookbooks(available_cookbooks, repos, root_repo):
     for depends in root_repo.metadata.depends:
         found = False
         for local_dir, cookbook in available_cookbooks.items():
-            if cookbook.metadata.cookbook_name == depends:
+            if cookbook.name == depends:
                 found = True
                 if not cookbook.local_dir in repos:
                     cookbook.checkout()
-                    repos[cookbook.metadata.cookbook_name] = cookbook
+                    repos[cookbook.name] = cookbook
                     recurse_discover_cookbooks(available_cookbooks, repos, cookbook)
         if not found:
-            print("%s depends on %s but it is not available" % (root_repo.metadata.cookbook_name, depends))
+            print "%s depends on %s but it is not available" % (root_repo.name, depends)
             exit()
 
 def build_dependency_graph(repo_dict):
@@ -42,7 +42,7 @@ def build_dependency_graph(repo_dict):
     # Build a name dict for easily lookup of metadata dependencies.
     for _,repo in repo_dict.iteritems():
         parents[repo] = []
-        names[repo.metadata.cookbook_name] = repo
+        names[repo.name] = repo
 
     for _,repo in repo_dict.iteritems():
         child_repos = repo.metadata.depends
@@ -81,10 +81,10 @@ def checkout_and_parse(path):
 
     for local_dir, url in available_repos.items():
         cookbook = CookbookRepo(local_dir, url)
-        available_cookbooks[cookbook.metadata.cookbook_name] = cookbook
+        available_cookbooks[cookbook.name] = cookbook
         if local_dir == root_local_dir:
             root_cookbook = cookbook
-            repos[root_cookbook.metadata.cookbook_name] = root_cookbook
+            repos[root_cookbook.name] = root_cookbook
             root_cookbook.checkout()
 
     recurse_discover_cookbooks(available_cookbooks, repos, root_cookbook) 
@@ -105,11 +105,11 @@ def print_summary(repos):
     for i, repo in enumerate(repos):
         if repo.url:
             if repo.changed:
-                print "%d. %s: %s => %s" % ((i+1, repo.metadata.cookbook_name, repo.old_tag, repo.new_tag))
+                print "%d. %s: %s => %s" % ((i+1, repo.name, repo.old_tag, repo.new_tag))
             else:
-                print "%d. %s: unchanged" % (i+1, repo.metadata.cookbook_name)
+                print "%d. %s: unchanged" % (i+1, repo.name)
         else:
-            print "%d. %s will be pinned at %s" % (i+1, repo.metadata.cookbook_name, repo.new_tag)
+            print "%d. %s will be pinned at %s" % (i+1, repo.name, repo.new_tag)
 
 
 def generate_tinafile(repos):
@@ -121,7 +121,7 @@ def generate_tinafile(repos):
    
     for repo in repos:
         format_str = "+%s: %s\n" if repo.changed else "%s: %s\n"
-        tinafile.write(format_str % (repo.metadata.cookbook_name, repo.new_tag))
+        tinafile.write(format_str % (repo.name, repo.new_tag))
 
     tinafile.close()
 
@@ -148,12 +148,12 @@ def gather_user_input(repos):
             print "Unrecognized option: %s" % line
 
 def modify_changed_repo(repo):
-    print("%s will be tagged as %s" % (repo.metadata.cookbook_name, repo.new_tag))
-    print("1. Mark unchanged")
-    print("2. Bump build number")
-    print("3. Bump minor version")
-    print("4. Bump major version")
-    print("5. Do nothing")
+    print "%s will be tagged as %s" % (repo.name, repo.new_tag)
+    print "1. Mark unchanged"
+    print "2. Bump build number"
+    print "3. Bump minor version"
+    print "4. Bump major version"
+    print "5. Do nothing"
 
     user_input = raw_input("Choose one of the above options: ")
     try:
@@ -165,14 +165,14 @@ def modify_changed_repo(repo):
         elif n == 5:
             pass
         else:
-            print("Unrecognized option: %s" % user_input)
+            print "Unrecognized option: %s" % user_input
     except ValueError:
-        print("Unrecognized option: %s" % user_input)
+        print "Unrecognized option: %s" % user_input
 
 def modify_unchanged_repo(repo):
-    print("%s is unchanged and does not need to be tagged" % repo.metadata.cookbook_name)
-    print("1. Mark changed")
-    print("2. Do nothing")
+    print "%s is unchanged and does not need to be tagged" % repo.name
+    print "1. Mark changed"
+    print "2. Do nothing"
 
     user_input = raw_input("Choose one of the above options: ")
     try:
@@ -182,14 +182,14 @@ def modify_unchanged_repo(repo):
         elif n == 2:
             pass
         else:
-            print("Unrecognized option: %s" % user_input)
+            print "Unrecognized option: %s" % user_input
     except ValueError:
-        print("Unrecognized option: %s" % user_input)
+        print "Unrecognized option: %s" % user_input
 
 def modify_community_cookbook(repo):
-    print("%s is a community cookbook, and will be pinned at %s" % (repo.metadata.cookbook_name, repo.new_tag))
-    print("1. Modify pinned version")
-    print("2. Do nothing")
+    print "%s is a community cookbook, and will be pinned at %s" % (repo.name, repo.new_tag)
+    print "1. Modify pinned version"
+    print "2. Do nothing"
 
     user_input = raw_input("Choose one of the above options: ")
     try:
@@ -199,9 +199,9 @@ def modify_community_cookbook(repo):
         elif n == 2:
             pass
         else:
-            print("Unrecognized option: %s" % user_input)
+            print "Unrecognized option: %s" % user_input
     except ValueError:
-        print("Unrecognized option: %s" % user_input)
+        print "Unrecognized option: %s" % user_input
 
 def commit_and_push():
     repo_list, versions = parse_tinafile()
