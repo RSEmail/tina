@@ -1,10 +1,14 @@
+import os
 import re
 from tag import Tag
 
 class CookbookMetadata:
-    def __init__(self, filename):
-        self.filename = filename
-        self.cookbook_name = None
+    def __init__(self, local_dir):
+        # The cookbook name will default to the local directory name,
+        # since we can't guarantee community cookbooks will have the
+        # name in the metadata file.
+        self.cookbook_name = local_dir
+        self.filename = os.path.join(".tina", local_dir, "metadata.rb")
         self.version = None
         self.depends = []
         self.parse_metadata();
@@ -19,9 +23,6 @@ class CookbookMetadata:
                 # Find the name of the cookbook.
                 matches = regex_name.findall(line)
                 for word in matches:
-                    if self.cookbook_name:
-                        raise Exception("Metadata file has multiple 'name' "
-                                        "sections: '%s'" % self.filename)
                     self.cookbook_name = word
 
                 # Find the list of dependencies.

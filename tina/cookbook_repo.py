@@ -24,7 +24,7 @@ class CookbookRepo:
             self.refresh_metadata()
 
     def refresh_metadata(self):
-        self.metadata = CookbookMetadata(".tina/" + self.local_dir + "/metadata.rb")
+        self.metadata = CookbookMetadata(self.local_dir)
         if self.using_git:
             self.old_tag = get_tag_of_repo(self.repo)
             if self.old_tag:
