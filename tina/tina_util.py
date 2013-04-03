@@ -1,3 +1,4 @@
+import fileinput
 import os
 import re
 import shutil
@@ -6,6 +7,7 @@ from cookbook_repo import *
 from gitlib import *
 from berkslib import *
 from tag import Tag
+from operator import attrgetter
 
 def tag_compare(x, y):
     x_nums = x.split(".")
@@ -89,14 +91,25 @@ def checkout_and_parse(path):
 
     build_dependency_graph(repos)
 
-    print_summary(repos)
-    generate_tinafile(repos)
+    repo_list = repos.values()
+    sort_repos(repo_list)
+    print_summary(repo_list)
+    gather_user_input(repo_list)
+    generate_tinafile(repo_list)
+
+def sort_repos(repos):
+    repos.sort(key=attrgetter("url"), reverse=True)
 
 def print_summary(repos):
-    changed_repos = {}
-    for _,repo in repos.items():
-        format_str = "+%s (%s): %s" if repo.changed else "%s (%s): %s"
-        print(format_str % (repo.metadata.cookbook_name, repo.new_tag, repo.url))
+    print "REPOSITORY SUMMARY:"
+    for i, repo in enumerate(repos):
+        if repo.url:
+            if repo.changed:
+                print "%d. %s: %s => %s" % ((i+1, repo.metadata.cookbook_name, repo.old_tag, repo.new_tag))
+            else:
+                print "%d. %s: unchanged" % (i+1, repo.metadata.cookbook_name)
+        else:
+            print "%d. %s will be pinned at %s" % (i+1, repo.metadata.cookbook_name, repo.new_tag)
 
 
 def generate_tinafile(repos):
@@ -106,11 +119,89 @@ def generate_tinafile(repos):
         "# with a + will have versions pinned, be tagged, and\n"
         "# will be pushed to their upstream remotes.\n")
    
-    for _,repo in repos.items():
+    for repo in repos:
         format_str = "+%s: %s\n" if repo.changed else "%s: %s\n"
         tinafile.write(format_str % (repo.metadata.cookbook_name, repo.new_tag))
 
     tinafile.close()
+
+def gather_user_input(repos):
+    prompt = "Enter a repository index to modify, 'p' to print summary, 'q' to quit: "
+    while True:
+        line = raw_input(prompt)
+        if line == "q": break
+        if line == "p":
+            print_summary(repos)
+            continue
+
+        try:
+            n = int(line)
+            repo = repos[n-1]
+            if repo.url:
+                if repo.changed:
+                    modify_changed_repo(repo)
+                else:
+                    modify_unchanged_repo(repo)
+            else:
+                modify_community_cookbook(repo)
+        except ValueError:
+            print "Unrecognized option: %s" % line
+
+def modify_changed_repo(repo):
+    print("%s will be tagged as %s" % (repo.metadata.cookbook_name, repo.new_tag))
+    print("1. Mark unchanged")
+    print("2. Bump build number")
+    print("3. Bump minor version")
+    print("4. Bump major version")
+    print("5. Do nothing")
+
+    user_input = raw_input("Choose one of the above options: ")
+    try:
+        n = int(user_input)
+        if n == 1:
+            repo.changed = False
+        elif n > 1 and n < 5:
+            repo.version_bump(n-1)
+        elif n == 5:
+            pass
+        else:
+            print("Unrecognized option: %s" % user_input)
+    except ValueError:
+        print("Unrecognized option: %s" % user_input)
+
+def modify_unchanged_repo(repo):
+    print("%s is unchanged and does not need to be tagged" % repo.metadata.cookbook_name)
+    print("1. Mark changed")
+    print("2. Do nothing")
+
+    user_input = raw_input("Choose one of the above options: ")
+    try:
+        n = int(user_input)
+        if n == 1:
+            repo.changed = True
+        elif n == 2:
+            pass
+        else:
+            print("Unrecognized option: %s" % user_input)
+    except ValueError:
+        print("Unrecognized option: %s" % user_input)
+
+def modify_community_cookbook(repo):
+    print("%s is a community cookbook, and will be pinned at %s" % (repo.metadata.cookbook_name, repo.new_tag))
+    print("1. Modify pinned version")
+    print("2. Do nothing")
+
+    user_input = raw_input("Choose one of the above options: ")
+    try:
+        n = int(user_input)
+        if n == 1:
+            repo.new_tag = Tag(raw_input("Enter new version: "))
+        elif n == 2:
+            pass
+        else:
+            print("Unrecognized option: %s" % user_input)
+    except ValueError:
+        print("Unrecognized option: %s" % user_input)
 
 def commit_and_push():
     repo_list, versions = parse_tinafile()

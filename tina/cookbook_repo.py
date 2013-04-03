@@ -47,9 +47,14 @@ class CookbookRepo:
         if self.changed:
             commit_and_push(self.repo, self.local_dir, self.new_tag)
 
-    def version_bump(self):
+    def version_bump(self, level=1):
         if self.changed:
             self.new_tag = copy.copy(self.old_tag)
-            self.new_tag.build_bump()
+            if level == 1:
+                self.new_tag.build_bump()
+            elif level == 2:
+                self.new_tag.minor_bump()
+            elif level == 3:
+                self.new_tag.major_bump()
         else:
             self.new_tag = self.old_tag
