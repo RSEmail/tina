@@ -1,9 +1,14 @@
+import os
 import re
+from tag import Tag
 
 class CookbookMetadata:
-    def __init__(self, filename):
-        self.filename = filename
-        self.cookbook_name = None
+    def __init__(self, local_dir):
+        # The cookbook name will default to the local directory name,
+        # since we can't guarantee community cookbooks will have the
+        # name in the metadata file.
+        self.cookbook_name = local_dir
+        self.filename = os.path.join(".tina", local_dir, "metadata.rb")
         self.version = None
         self.depends = []
         self.parse_metadata();
@@ -18,9 +23,6 @@ class CookbookMetadata:
                 # Find the name of the cookbook.
                 matches = regex_name.findall(line)
                 for word in matches:
-                    if self.cookbook_name:
-                        raise Exception("Metadata file has multiple 'name' "
-                                        "sections: '%s'" % self.filename)
                     self.cookbook_name = word
 
                 # Find the list of dependencies.
@@ -34,7 +36,8 @@ class CookbookMetadata:
                     if self.version:
                         raise Exception("Metadata file has multiple 'version' "
                             "sections: '%s'" % self.filename)
-                    self.version = matches.group(1)
+                    self.version = Tag(matches.group(1))
+
         except IOError as e:
             print "Unable to open file to parse it '{0}': '{1}'".format(self.filename, e.strerror)
             raise
@@ -42,7 +45,7 @@ class CookbookMetadata:
             raw.close()
         return 
 
-    def inject_versions(self, tagged_version, versions):
+    def inject_versions(self, tag, versions):
         metadata = open(self.filename, "r")
         content = metadata.readlines()
         metadata.close()
@@ -53,7 +56,7 @@ class CookbookMetadata:
         for line in content:
             version_match = regex_version.match(line)
             if version_match:
-                line = line.replace(version_match.group(1), tagged_version)
+                line = line.replace(version_match.group(1), tag.version_str())
 
             depends_match = regex_depends.match(line)
             if depends_match:
@@ -62,9 +65,9 @@ class CookbookMetadata:
                     raise Exception("Missing version number for cookbook '%s' "
                                     % cookbook)
                 else:
-                    version = versions[cookbook]
+                    version = versions[cookbook].version_str()
                     line = re.sub(r'[\'\"]%s[\'\"]' % cookbook,
-                                  r'"%s", "= %s"' % (cookbook, version), line)
+                        r'"%s", "= %s"' % (cookbook, version), line)
             new_content.append(line)
 
         metadata = open(self.filename, "w")
