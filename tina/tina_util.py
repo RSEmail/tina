@@ -141,6 +141,10 @@ def gather_user_input(repos):
 
         try:
             n = int(line)
+            if n < 1 or n >= len(repos):
+                print "Invalid repo index: %d" % n
+                continue
+
             repo = repos[n-1]
             if repo.url:
                 if repo.changed:
@@ -165,14 +169,20 @@ def modify_changed_repo(repo):
         n = int(user_input)
         if n == 1:
             repo.changed = False
+            repo.new_tag = repo.old_tag
         elif n > 1 and n < 5:
             repo.version_bump(n-1)
         elif n == 5:
-            pass
+            return
         else:
             print "Unrecognized option: %s" % user_input
     except ValueError:
         print "Unrecognized option: %s" % user_input
+
+    if repo.changed:
+        print "%s will now be tagged as %s" % (repo.name, repo.new_tag)
+    else:
+        print "%s is now unchanged" % repo.name
 
 def modify_unchanged_repo(repo):
     print "%s is unchanged and does not need to be tagged" % repo.name
@@ -185,11 +195,14 @@ def modify_unchanged_repo(repo):
         if n == 1:
             repo.changed = True
         elif n == 2:
-            pass
+            return
         else:
             print "Unrecognized option: %s" % user_input
     except ValueError:
         print "Unrecognized option: %s" % user_input
+
+    if repo.changed:
+        print "%s will now be tagged as %s" % (repo.name, repo.new_tag)
 
 def modify_community_cookbook(repo):
     print "%s is a community cookbook, and will be pinned at %s" % \
@@ -203,7 +216,7 @@ def modify_community_cookbook(repo):
         if n == 1:
             repo.new_tag = Tag(raw_input("Enter new version: "))
         elif n == 2:
-            pass
+            return
         else:
             print "Unrecognized option: %s" % user_input
     except ValueError:

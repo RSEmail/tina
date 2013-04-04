@@ -30,6 +30,9 @@ class Tag:
 
     def minor_bump(self):
         self.minor = self.minor + 1
+        self.build = 0
 
     def major_bump(self):
         self.major = self.major + 1
+        self.minor = 0
+        self.build = 0
