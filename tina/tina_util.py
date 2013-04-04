@@ -69,7 +69,7 @@ def resolve_dependencies(graph, repo):
     for parent in graph[repo]:
         resolve_dependencies(graph, parent)
 
-def checkout_and_parse(path):
+def checkout_and_parse(path, interactive):
     cleanup()
 
     available_repos = repos_from_berks()
@@ -96,7 +96,7 @@ def checkout_and_parse(path):
     repo_list = repos.values()
     sort_repos(repo_list)
     print_summary(repo_list)
-    gather_user_input(repo_list)
+    if interactive: gather_user_input(repo_list)
     generate_tinafile(repo_list)
 
 def sort_repos(repos):

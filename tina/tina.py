@@ -1,22 +1,28 @@
+import argparse
 import os
 import sys
-from cookbook_repo import *
 from tina_util import *
 
-def main():
-    commit = False
-    for arg in sys.argv[1:]:
-        if arg == "--commit":
-            commit = True
-        else:
-            print "option %s not recognized" % arg
-            sys.exit(1)
+def handle_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--commit", action="store_true",
+        help="Commit changes to remotes (default: dry-run only)")
+    parser.add_argument("-i", "--interactive", action="store_true",
+        help="Run in interactive mode")
+    parser.add_argument("-n", "--no-cleanup", action="store_true",
+            help="Don't remove temporary files after committing")
+    return parser.parse_args()
 
-    if commit:
+def main():
+    args = handle_args()
+
+    if not args.commit or not os.path.exists(".tina"):
+        checkout_and_parse(".", args.interactive)
+
+    if args.commit:
         commit_and_push()
-    else:
-        # This is a dry-run.
-        checkout_and_parse(".")
+        if not args.no_cleanup:
+            cleanup()
 
 if __name__ == "__main__":
     main()
