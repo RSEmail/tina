@@ -33,7 +33,7 @@ def recurse_discover_cookbooks(available_cookbooks, repos, root_repo):
                     recurse_discover_cookbooks(available_cookbooks, repos,
                         cookbook)
         if not found:
-            print "%s depends on %s but it is not available" %
+            print "%s depends on %s but it is not available" % \
                 (root_repo.name, depends)
             exit()
 
@@ -130,7 +130,7 @@ def generate_tinafile(repos):
     tinafile.close()
 
 def gather_user_input(repos):
-    prompt = "Enter a repository index to modify, 'p' to print summary, "
+    prompt = "Enter a repository index to modify, 'p' to print summary, " \
         "'q' to quit: "
     while True:
         line = raw_input(prompt)
@@ -192,7 +192,7 @@ def modify_unchanged_repo(repo):
         print "Unrecognized option: %s" % user_input
 
 def modify_community_cookbook(repo):
-    print "%s is a community cookbook, and will be pinned at %s" %
+    print "%s is a community cookbook, and will be pinned at %s" % \
         (repo.name, repo.new_tag)
     print "1. Modify pinned version"
     print "2. Do nothing"
