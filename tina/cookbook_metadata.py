@@ -16,9 +16,9 @@ class CookbookMetadata:
     def parse_metadata(self):
         try:
             raw = open(self.filename, "r")
-            regex_name = re.compile(r'name\s+[\'\"](.*?)[\'\"]')
-            regex_depends = re.compile(r'depends\s+[\'\"](.*?)[\'\"]')
-            regex_version = re.compile(r'version\s+[\'\"](.*?)[\'\"]')
+            regex_name = re.compile("name\s+[\'\"](.*?)[\'\"]")
+            regex_depends = re.compile("depends\s+[\'\"](.*?)[\'\"]")
+            regex_version = re.compile("version\s+[\'\"](.*?)[\'\"]")
             for line in raw:
                 # Find the name of the cookbook.
                 matches = regex_name.findall(line)
@@ -39,7 +39,8 @@ class CookbookMetadata:
                     self.version = Tag(matches.group(1))
 
         except IOError as e:
-            print "Unable to open file to parse it '{0}': '{1}'".format(self.filename, e.strerror)
+            print "Unable to open file to parse it '{0}': "
+                "'{1}'".format(self.filename, e.strerror)
             raise
         else:
             raw.close()
@@ -50,8 +51,8 @@ class CookbookMetadata:
         content = metadata.readlines()
         metadata.close()
 
-        regex_depends = re.compile(r'depends\s+[\'\"](.*?)[\'\"]')
-        regex_version = re.compile(r'version\s+[\'\"](.*?)[\'\"]')
+        regex_depends = re.compile("depends\s+[\'\"](.*?)[\'\"]")
+        regex_version = re.compile("version\s+[\'\"](.*?)[\'\"]")
         new_content = []
         for line in content:
             version_match = regex_version.match(line)
@@ -66,8 +67,8 @@ class CookbookMetadata:
                                     % cookbook)
                 else:
                     version = versions[cookbook].version_str()
-                    line = re.sub(r'[\'\"]%s[\'\"]' % cookbook,
-                        r'"%s", "= %s"' % (cookbook, version), line)
+                    line = re.sub("[\'\"]%s[\'\"]" % cookbook,
+                        "\"%s\", \"= %s\"" % (cookbook, version), line)
             new_content.append(line)
 
         metadata = open(self.filename, "w")
