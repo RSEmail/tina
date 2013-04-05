@@ -9,14 +9,6 @@ from berkslib import *
 from tag import Tag
 from operator import attrgetter
 
-def tag_compare(x, y):
-    x_nums = x.split(".")
-    y_nums = y.split(".")
-    for (x,y) in zip(x_nums,y_nums):
-        if x != y:
-            return int(x) - int(y)
-    return 0
-
 def cleanup():
     if os.path.exists(".tina"):
         shutil.rmtree(".tina")
