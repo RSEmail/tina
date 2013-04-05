@@ -1,17 +1,18 @@
-import argparse
+import optparse
 import os
 import sys
 from tina_util import *
 
 def handle_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--commit", action="store_true",
+    parser = optparse.OptionParser()
+    parser.add_option("-c", "--commit", action="store_true",
         help="Commit changes to remotes (default: dry-run only)")
-    parser.add_argument("-i", "--interactive", action="store_true",
+    parser.add_option("-i", "--interactive", action="store_true",
         help="Run in interactive mode")
-    parser.add_argument("-n", "--no-cleanup", action="store_true",
+    parser.add_option("-n", "--no-cleanup", action="store_true",
             help="Don't remove temporary files after committing")
-    return parser.parse_args()
+    options, args = parser.parse_args()
+    return options
 
 def main():
     args = handle_args()
