@@ -1,6 +1,6 @@
 import re
 from urlparse import urlparse
-from subprocess import check_output
+import subprocess
 import json
 from tag import Tag
 
@@ -13,8 +13,9 @@ def get_name_from_url(repo_url):
 
 def repos_from_berks():
     print "Running berks install"
-    berks_output = check_output(["berks", "install", "--path", ".tina",
-        "--format=json"])
+    proc = subprocess.Popen(["berks", "install", "--path", ".tina", 
+        "--format=json"], stdout=subprocess.PIPE)
+    berks_output, errors = proc.communicate()
     data = json.loads(berks_output)
     repos = {}
     for repo in data["cookbooks"]:
