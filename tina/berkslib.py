@@ -12,7 +12,7 @@ def get_name_from_url(repo_url):
 
 
 def repos_from_berks():
-    print "Running berks install"
+    print "Running Berkshelf..."
     proc = subprocess.Popen(["berks", "install", "--path", ".tina", 
         "--format=json"], stdout=subprocess.PIPE)
     berks_output, errors = proc.communicate()

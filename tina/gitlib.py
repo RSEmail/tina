@@ -5,8 +5,7 @@ from cookbook_metadata import *
 from tag import Tag
 
 def checkout_repo(repo_name, repo_url):
-    local_path = os.path.join(".tina/", repo_name)
-    print "Cloning %s" % repo_url
+    local_path = os.path.join(".tina", repo_name)
     return git.Repo.clone_from(repo_url, local_path)
 
 def get_tag_of_repo(repo):

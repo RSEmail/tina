@@ -13,7 +13,7 @@ def cleanup():
     if os.path.exists(".tina"):
         shutil.rmtree(".tina")
 
-def recurse_discover_cookbooks(available_cookbooks, repos, root_repo):
+def discover_cookbooks(available_cookbooks, repos, root_repo):
     for depends in root_repo.metadata.depends:
         found = False
         for local_dir, cookbook in available_cookbooks.items():
@@ -22,14 +22,32 @@ def recurse_discover_cookbooks(available_cookbooks, repos, root_repo):
                 if not cookbook.local_dir in repos:
                     cookbook.checkout()
                     repos[cookbook.name] = cookbook
-                    recurse_discover_cookbooks(available_cookbooks, repos,
+                    discover_cookbooks(available_cookbooks, repos,
                         cookbook)
         if not found:
             print "%s depends on %s but it is not available" % \
                 (root_repo.name, depends)
             exit()
 
+def build_repo_dict(available_repos, root_dir):
+    cookbooks = {}
+    repos = {}
+    root_cookbook = None
+
+    for local_dir, url in available_repos.items():
+        cookbook = CookbookRepo(local_dir, available_repos[local_dir])
+        cookbooks[cookbook.name] = cookbook
+        if local_dir == root_dir:
+            root_cookbook = cookbook
+            repos[root_cookbook.name] = root_cookbook
+            root_cookbook.checkout()
+
+    print "Discovering dependent cookbooks..."
+    discover_cookbooks(cookbooks, repos, root_cookbook)
+    return repos
+
 def build_dependency_graph(repo_dict):
+    print "Resolving dependencies..."
     parents = {}
     names = {}
 
@@ -64,25 +82,13 @@ def resolve_dependencies(graph, repo):
 def checkout_and_parse(path, interactive):
     cleanup()
 
-    available_repos = repos_from_berks()
-    available_cookbooks = {}
-
     root_url = get_local_repo_url()
     root_local_dir = get_name_from_url(root_url)
 
+    available_repos = repos_from_berks()
     available_repos[root_local_dir] = root_url
-    repos = {}
 
-    for local_dir, url in available_repos.items():
-        cookbook = CookbookRepo(local_dir, url)
-        available_cookbooks[cookbook.name] = cookbook
-        if local_dir == root_local_dir:
-            root_cookbook = cookbook
-            repos[root_cookbook.name] = root_cookbook
-            root_cookbook.checkout()
-
-    recurse_discover_cookbooks(available_cookbooks, repos, root_cookbook) 
-
+    repos = build_repo_dict(available_repos, root_local_dir)
     build_dependency_graph(repos)
 
     repo_list = repos.values()

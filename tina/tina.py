@@ -23,6 +23,8 @@ def main():
         commit_and_push()
         if not args.no_cleanup:
             cleanup()
+    else:
+        print "To commit these changes, re-run with --commit"
 
 if __name__ == "__main__":
     main()
