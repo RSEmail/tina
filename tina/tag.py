@@ -1,4 +1,5 @@
 import re
+import sys
 
 class Tag:
     def __init__(self, version_str):
@@ -58,3 +59,27 @@ class Tag:
         self.major = self.major + 1
         self.minor = 0
         self.build = 0
+
+    def increment(self):
+        self.build_bump()
+
+    def decrement(self):
+        self.build = self.build - 1
+        if self.build < 0:
+            self.build = sys.maxint
+            self.minor = self.minor - 1
+            if self.minor < 0:
+                self.minor = sys.maxint
+                self.major = self.major - 1
+
+    @staticmethod
+    def max_tag():
+        t = Tag("0.0.0")
+        t.major = sys.maxint
+        t.minor = sys.maxint
+        t.build = sys.maxint
+        return t
+
+    @staticmethod
+    def min_tag():
+        return Tag("0.0.0")
