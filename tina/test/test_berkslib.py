@@ -3,7 +3,7 @@ import tina.berkslib
 import json
 from mock import Mock
 
-class TestParseBerk(unittest.TestCase):
+class TestBerkslib(unittest.TestCase):
     def test_get_name_from_url(self):
         repo_url = "http://github.com/test_project.git"
         output = tina.berkslib.get_name_from_url(repo_url)
