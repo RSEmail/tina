@@ -1,6 +1,7 @@
 import os
 import re
 from tag import Tag
+from version_requirement import VersionRequirement
 
 class CookbookMetadata:
     def __init__(self, local_dir):
@@ -11,13 +12,15 @@ class CookbookMetadata:
         self.filename = os.path.join(".tina", local_dir, "metadata.rb")
         self.version = None
         self.depends = []
+        self.requirements = {}
         self.parse_metadata();
 
     def parse_metadata(self):
         try:
             raw = open(self.filename, "r")
             regex_name = re.compile("name\s+[\'\"](.*?)[\'\"]")
-            regex_depends = re.compile("depends\s+[\'\"](.*?)[\'\"]")
+            regex_depends = re.compile("depends\s+[\'\"](.*?)[\'\"]"
+                "(,\s*[\'\"]([~<>=]+)\s+([\d\.]+)[\'\"])?")
             regex_version = re.compile("version\s+[\'\"](.*?)[\'\"]")
             for line in raw:
                 # Find the name of the cookbook.
@@ -26,9 +29,14 @@ class CookbookMetadata:
                     self.cookbook_name = word
 
                 # Find the list of dependencies.
-                matches = regex_depends.findall(line)
-                for word in matches:
-                    self.depends.append(word)
+                match = regex_depends.match(line)
+                if match:
+                    name = match.group(1)
+                    self.depends.append(name)
+                    if match.group(2):
+                        operator = match.group(3)
+                        version = match.group(4)
+                        self.requirements[name] = VersionRequirement(self.cookbook_name, name, operator, version)
 
                 # Find the current version of the cookbook.
                 matches = regex_version.match(line)

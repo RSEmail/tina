@@ -18,6 +18,28 @@ class Tag:
         else:
             return self.build < other.build
 
+    def __gt__(self, other):
+        if self.major != other.major:
+            return self.major > other.major
+        elif self.minor != other.minor:
+            return self.minor > other.minor
+        else:
+            return self.build > other.build
+
+    def __eq__(self, other):
+        return (self.major == other.major and
+                self.minor == other.minor and
+                self.build == other.build)
+
+    def __ne__(self, other):
+        return not self == other
+
+    def __le__(self, other):
+        return self < other or self == other
+
+    def __ge__(self, other):
+        return self > other or self == other
+
     def __repr__(self):
         return "%s%d.%d.%d" % (self.pretext, self.major, self.minor,
             self.build)

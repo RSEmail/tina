@@ -3,6 +3,7 @@ import os
 import re
 import shutil
 import sys
+from collections import defaultdict
 from cookbook_repo import *
 from gitlib import *
 from berkslib import *
@@ -45,6 +46,29 @@ def build_repo_dict(available_repos, root_dir):
     print "Discovering dependent cookbooks..."
     discover_cookbooks(cookbooks, repos, root_cookbook)
     return repos
+
+def check_version_conflicts(repos):
+    print "Checking for version conflicts..."
+    metadatas = [repo.metadata for repo in repos.values()]
+    requirements = defaultdict(list)
+    for metadata in metadatas:
+        for name, requirement in metadata.requirements.items():
+            requirements[name].append(requirement)
+
+    incompatibility = False
+    for name in requirements.keys():
+        for i, req1 in enumerate(requirements[name]):
+            for req2 in requirements[name][i+1:]:
+                if not req1.compatible_with(req2):
+                    print("Error: %s requires %s %s %s, but %s requires %s %s %s" %
+                        (req1.dependence, req1.name, req1.operator, req1.version,
+                        req2.dependence, req2.name, req2.operator, req2.version))
+                    incompatibility = True
+    if incompatibility:
+        print "Please resolve the above version conflicts and re-run TINA"
+
+    return incompatibility
+
 
 def build_dependency_graph(repo_dict):
     print "Resolving dependencies..."
@@ -89,6 +113,7 @@ def checkout_and_parse(path, interactive):
     available_repos[root_local_dir] = root_url
 
     repos = build_repo_dict(available_repos, root_local_dir)
+    if check_version_conflicts(repos): sys.exit(1)
     build_dependency_graph(repos)
 
     repo_list = repos.values()
