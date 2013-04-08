@@ -140,7 +140,7 @@ def print_summary(repos):
 
 
 def generate_tinafile(repos):
-    tinafile = open(".tina/Tinafile", "w")
+    tinafile = open(os.path.join(".tina", "Tinafile"), "w")
 
     tinafile.write("# These are taggable cookbook repos. Repos prepended\n"
         "# with a + will have versions pinned, be tagged, and\n"
@@ -256,7 +256,7 @@ def commit_and_push():
         cookbook_repo.commit()
 
 def parse_tinafile():
-    tinafile = open(".tina/Tinafile", "r")
+    tinafile = open(os.path.join(".tina", "Tinafile"), "r")
     lines = tinafile.readlines()
 
     repo_list = [ ]
