@@ -1,3 +1,4 @@
+import sys
 from tag import Tag
 
 class VersionRequirement:
@@ -5,47 +6,46 @@ class VersionRequirement:
         self.dependence = dependence
         self.name = name
         self.operator = operator
-        self.max_version = None
-        self.store_version(version)
+        self.version = version
+        self.store_versions()
 
-    def store_version(self, version):
+    def store_versions(self):
         op = self.operator
-        if op == "=" or op == ">" or op == ">=":
-            self.version = Tag(version)
+        if op == "=":
+            self.min_version = Tag(self.version)
+            self.max_version = Tag(self.version)
+        elif op == ">":
+            self.min_version = Tag(self.version)
+            self.min_version.increment()
+            self.max_version = Tag.max_tag()
+        elif op == ">=":
+            self.min_version = Tag(self.version)
+            self.max_version = Tag.max_tag()
+        elif op == "<":
+            self.min_version = Tag.min_tag()
+            self.max_version = Tag(self.version)
+            self.max_version.decrement()
+        elif op == "<=":
+            self.min_version = Tag.min_tag()
+            self.max_version = Tag(self.version)
         elif op == "~>":
-            version_nums = version.split(".")
+            version_nums = self.version.split(".")
+            length = len(version_nums)
             while len(version_nums) < 3:
                 version_nums.append("0")
-            self.version = Tag(".".join(version_nums))
-            version_nums[0] = str(int(version_nums[0]) + 1)
-            self.max_version = Tag(".".join(version_nums))
+            version_str = ".".join(version_nums)
+
+            self.min_version = Tag(version_str)
+            if length == 1:
+                self.max_version = Tag.max_tag()
+            else:
+                self.max_version = Tag(version_str)
+                if length == 2: self.max_version.major_bump()
+                elif length == 3: self.max_version.minor_bump()
+                self.max_version.decrement()
         else:
-            raise Exception("Error: unknown dependence operator: %s" % operator)
+            raise Exception("Error: unknown version constraint: %s" % operator)
 
     def compatible_with(self, other):
-        if self.operator == "=":
-            if other.operator == "=":
-                return self.version == other.version
-            elif other.operator == ">=":
-                return self.version >= other.version
-            elif other.operator == ">" or other.operator == "~>":
-                return self.version > other.version
-        elif self.operator == "~>":
-            return (other.version >= self.version and
-                    other.version < self.max_version)
-        elif self.operator == ">":
-            if other.operator == ">" or other.operator == ">=":
-                return True
-            elif other.operator == "=":
-                return other.version > self.version
-            elif other.operator == "~>":
-                return (self.version > other.version and
-                        self.version < other.max_version)
-        elif self.operator == ">=":
-            if other.operator == ">" or other.operator == ">=":
-                return True
-            elif other.operator == "=":
-                return other.version >= self.version
-            elif other.operator == "~>":
-                return (self.version >= other.version and
-                        self.version < other.max_version)
+        return ((self.min_version <= other.max_version) and
+                (self.max_version >= other.min_version))
