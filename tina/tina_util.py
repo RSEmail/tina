@@ -228,7 +228,7 @@ def commit_and_push():
         cookbook_repo.changed = True
         cookbook_repo.new_tag = versions[name]
         cookbook_repo.resolve_deps(versions)
-        #cookbook_repo.commit()
+        cookbook_repo.commit()
 
 def parse_tinafile():
     tinafile = open(".tina/Tinafile", "r")

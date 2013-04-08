@@ -1,5 +1,6 @@
 import copy
 import git
+import os
 import shutil
 from cookbook_metadata import *
 from berkslib import *
@@ -47,7 +48,8 @@ class CookbookRepo:
 
     def commit(self):
         if self.changed:
-            commit_and_push(self.repo, self.local_dir, self.new_tag)
+            repo = git.Repo(os.path.join(".tina", self.local_dir))
+            commit_and_push(repo, self.name, self.new_tag)
 
     def version_bump(self, level=1):
         if self.changed:
