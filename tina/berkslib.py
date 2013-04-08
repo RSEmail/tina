@@ -23,7 +23,7 @@ def repos_from_berks():
     return repos
 
 def _get_json_from_berks_run():
-    print "Running berks install"
+    print "Running Berkshelf..."
     proc = subprocess.Popen(["berks", "install", "--path", ".tina", 
         "--format=json"], stdout=subprocess.PIPE)
     berks_output, errors = proc.communicate()
