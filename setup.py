@@ -4,15 +4,19 @@ distribute_setup.use_setuptools()
 from setuptools import setup
 
 setup(
-  name='python-boilerplate',
-  version='0.1dev',
+  name='tina',
+  description='TINA Is Not Arif: A tool for tagging chef cookbooks and their dependencies.',
+  maintainer='RSEmail',
+  maintainer_email='tina-dev@mailtrust.com',
   entry_points={
   'console_scripts': [
-      'mybin = tina.mymodule:main'
+      'tina = tina.tina:main'
     ]
   },
   test_suite='tina.test',
+  version='0.3',
+  url='https://github.com/RSEmail/tina/',
   packages=['tina'],
-  license='Creative Commons Attribution-Noncommercial-Share Alike license',
+  license='GNU General Public License, version 3 (GPL-3.0)',
   long_description=open('README.md').read(),
 )
