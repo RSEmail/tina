@@ -14,7 +14,7 @@ setup(
     ]
   },
   test_suite='tina.test',
-  version='0.3',
+  version='0.4',
   url='https://github.com/RSEmail/tina/',
   packages=['tina'],
   license='GNU General Public License, version 3 (GPL-3.0)',
