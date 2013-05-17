@@ -168,7 +168,7 @@ def gather_user_input(repos):
 
         try:
             n = int(line)
-            if n < 1 or n >= len(repos):
+            if n < 1 or n > len(repos):
                 print "Invalid repo index: %d" % n
                 continue
 
