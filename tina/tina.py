@@ -2,6 +2,7 @@ import optparse
 import os
 import sys
 from tina_util import *
+from _version import __version__
 
 def handle_args():
     parser = optparse.OptionParser()
@@ -11,11 +12,17 @@ def handle_args():
         help="Run in interactive mode")
     parser.add_option("-n", "--no-cleanup", action="store_true",
             help="Don't remove temporary files after committing")
+    parser.add_option("-v", "--version", action="store_true",
+            help="Print version information")
     options, args = parser.parse_args()
     return options
 
 def main():
     args = handle_args()
+
+    if args.version:
+        print "tina %s" % __version__
+        return
 
     if not args.commit or not os.path.exists(".tina"):
         checkout_and_parse(".", args.interactive)
