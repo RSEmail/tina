@@ -1,6 +1,5 @@
 import unittest
 from tina.tag import Tag
-from mock import Mock
 
 class TestTag(unittest.TestCase):
 
@@ -57,6 +56,56 @@ class TestTag(unittest.TestCase):
         right_tag = Tag(version_string_right)
 
         self.assertTrue(left_tag < right_tag)
+
+
+    def test_greater_than_major(self):
+        version_string_left = "v2.3.4"
+        version_string_right = "v1.2.3"
+
+        left_tag = Tag(version_string_left)
+        right_tag = Tag(version_string_right)
+
+        self.assertTrue(left_tag > right_tag)
+
+    def test_greater_than_minor(self):
+        version_string_left = "v2.4.9"
+        version_string_right = "2.2.2"
+
+        left_tag = Tag(version_string_left)
+        right_tag = Tag(version_string_right)
+
+        self.assertTrue(left_tag > right_tag)
+
+    def test_greater_than_build(self):
+        version_string_left = "2.2.3"
+        version_string_right = "v2.2.2"
+
+        left_tag = Tag(version_string_left)
+        right_tag = Tag(version_string_right)
+
+        self.assertTrue(left_tag > right_tag)
+
+
+    def test_equalities(self):
+        version_string_one = "1.2.3"
+        version_string_two = "1.2.3"
+        version_string_three = "2.3.4"
+
+        tag_one = Tag(version_string_one)
+        tag_two = Tag(version_string_two)
+        tag_three = Tag(version_string_three)
+
+        self.assertTrue(tag_one == tag_two)
+        self.assertFalse(tag_one == tag_three)
+
+        self.assertTrue(tag_one != tag_three)
+        self.assertFalse(tag_one != tag_two)
+
+        self.assertTrue(tag_one <= tag_three)
+        self.assertFalse(tag_three <= tag_one)
+
+        self.assertTrue(tag_three >= tag_one)
+        self.assertFalse(tag_one >= tag_three)
 
 
     def test_repr(self):
