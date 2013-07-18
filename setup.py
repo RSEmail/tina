@@ -1,7 +1,18 @@
 import distribute_setup
+import re
 distribute_setup.use_setuptools()
 
 from setuptools import setup
+
+# Parse version from _version.py.
+version_file = "tina/_version.py"
+version_str = open("tina/_version.py", "rt").read()
+version_regex = r"^__version__\s*=\s*['\"]([^'\"]*)['\"]"
+match = re.search(version_regex, version_str, re.MULTILINE)
+if match:
+    version = match.group(1)
+else:
+    raise RuntimeError("Unable to find version string in '%s'" % version_file)
 
 setup(
   name='tina',
@@ -14,7 +25,7 @@ setup(
     ]
   },
   test_suite='tina.test',
-  version='0.6',
+  version=version,
   url='https://github.com/RSEmail/tina/',
   packages=['tina'],
   license='GNU General Public License, version 3 (GPL-3.0)',
