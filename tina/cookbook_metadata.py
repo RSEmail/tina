@@ -75,7 +75,7 @@ class CookbookMetadata:
                                     % cookbook)
                 else:
                     version = versions[cookbook].version_str()
-                    line = re.sub("[\'\"]%s[\'\"]" % cookbook,
+                    line = re.sub("[\'\"]%s[\'\"].*" % cookbook,
                         "\"%s\", \"= %s\"" % (cookbook, version), line)
             new_content.append(line)
 
