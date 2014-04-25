@@ -69,3 +69,18 @@ $ sudo easy_install nosetests
 $ sudo easy_install coverage
 $ nosetests --with-coverage
 ```
+
+Troubleshooting
+=====
+If you get the following when running tina:
+
+```
+ValueError: No JSON object could be decoded
+```
+
+Try downgrading your version of solve:
+
+```
+gem install solve --version 0.8.2
+gem uninstall solve (remove version 1.2.0 or anything > 0.8.2)
+```
