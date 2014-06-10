@@ -30,8 +30,11 @@ def _get_json_from_berks_run():
     return json.loads(berks_output)
 
 def _get_url_from_string(line):
-    regex = re.compile(".*[\'\"]([a-zA-Z]*://.*?)[\'\"]")
-    match = regex.match(line)
+    # regex tested with http://rubular.com/r/7xYgAT68QV
+    regex = re.compile(
+        "['\"](([a-z]*://)?([a-z]+@)?[a-z0-9\\.-]+[/:][a-z0-9/_\\.%-]+)['\"]",
+        re.I)
+    match = regex.search(line)
     if not match:
         return None
     word = match.group(1)
