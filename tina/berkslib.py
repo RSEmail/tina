@@ -30,7 +30,7 @@ def _get_json_from_berks_run():
     return json.loads(berks_output)
 
 def _get_url_from_string(line):
-    regex = re.compile("['\"]((https://|git://|git@).*?)['\"]")
+    regex = re.compile(".*['\"]((https://|git://|git@).*?)['\"]")
     match = regex.match(line)
     if not match:
         return None
