@@ -1,5 +1,7 @@
+import json
 import os
 import re
+import sys
 from tag import Tag
 from version_requirement import VersionRequirement
 
@@ -8,12 +10,48 @@ class CookbookMetadata:
         # The cookbook name will default to the local directory name,
         # since we can't guarantee community cookbooks will have the
         # name in the metadata file.
+        if ' ' in local_dir:
+            local_dir = local_dir.split(' ')[0]
         self.cookbook_name = local_dir
-        self.filename = os.path.join(".tina", local_dir, "metadata.rb")
+        cookbook_dir = os.path.join(".tina", local_dir)
+        if os.path.isfile(os.path.join(cookbook_dir, "metadata.rb")): 
+            self.filename = os.path.join(cookbook_dir, "metadata.rb")
+            old_metadata_format = True
+        elif os.path.isfile(os.path.join(cookbook_dir, "metadata.json")):
+            self.filename = os.path.join(cookbook_dir, "metadata.json")
+            old_metadata_format = False
+        else:
+            print "No valid metadata files found for cookbook {0}".format(\
+                self.cookbook_name)
+            sys.exit(1)
         self.version = None
         self.depends = []
         self.requirements = {}
-        self.parse_metadata();
+        if old_metadata_format:
+            self.parse_metadata();
+        else:
+            self.parse_json_metadata()
+
+    def parse_json_metadata(self):
+        try:
+            json_data = open(self.filename)
+            metadata = json.load(json_data)
+            dependencies = metadata['dependencies']
+            for name, version_part in dependencies.iteritems():
+                if ' ' not in version_part:
+                    print 'Invalid version. Operator not found'
+                    sys.exit(1)
+                else:
+                    parts = version_part.split(' ')
+                    operator = parts[0]
+                    version = parts[1]
+                    self.requirements[name] = VersionRequirement(self.cookbook_name,
+                                                                 name, operator,
+                                                                 version)
+            self.version = metadata['version']
+        except:
+            print 'Failed to parse dependencies for {0}'.format(\
+                self.cookbook_name)
 
     def parse_metadata(self):
         try:
