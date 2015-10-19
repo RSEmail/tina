@@ -1,38 +1,81 @@
-import optparse
-import os
+import difflib
+import logging
 import sys
-from tina_util import *
-from _version import __version__
 
-def handle_args():
-    parser = optparse.OptionParser()
-    parser.add_option("-c", "--commit", action="store_true",
-        help="Commit changes to remotes (default: dry-run only)")
-    parser.add_option("-i", "--interactive", action="store_true",
-        help="Run in interactive mode")
-    parser.add_option("-n", "--no-cleanup", action="store_true",
-            help="Don't remove temporary files after committing")
-    parser.add_option("-v", "--version", action="store_true",
-            help="Print version information")
-    options, args = parser.parse_args()
-    return options
+import commands
+import config
+import _version
+
+def get_verb_map():
+    verb_map = {}
+    for command_class in commands.commands:
+        verb_map[command_class.get_verb_name()] = command_class
+
+    return verb_map
+
+def print_help():
+    print 'usage: tina [--version] [--help] <command> [<args>]'
+    print
+    print 'The available tina commands are:'
+    for verb in sorted(get_verb_map().keys()):
+        print '\t{0}'.format(verb)
+    print
+    print 'See "tina help <command>" to read about a specific command.'
+
+def print_command_help(verb):
+    get_class_from_verb(verb).print_help()
+
+def print_version():
+    print 'tina version {0}'.format(_version.__version__)
+
+def handle_invalid_verb(verb):
+    print '"{0}" is not a valid tina command. See "tina --help".'.format(verb)
+
+    close_verbs = difflib.get_close_matches(verb, get_verb_map().keys())
+    if close_verbs:
+        print
+        print 'Did you mean this?'
+        for v in close_verbs:
+            print '\t{0}'.format(v)
+    sys.exit(1)
+
+def get_class_from_verb(verb):
+    try:
+        return get_verb_map()[verb]()
+    except KeyError:
+        raise ValueError('Invalid verb: {0}'.format(verb))
+
+def initialize():
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO,
+                        format='%(message)s')
+    config.TinaConfig.parse_config()
+
+def process_args():
+    if len(sys.argv) < 2:
+        print_help()
+    else:
+        first = sys.argv[1]
+        rest = sys.argv[2:]
+
+        if first == '--help':
+            print_help()
+        elif first == '--version':
+            print_version()
+        elif first == 'help':
+            if len(rest) < 1:
+                print_help()
+            else:
+                print_command_help(rest[0])
+        else:
+            try:
+                module = get_class_from_verb(first)
+            except ValueError:
+                handle_invalid_verb(first)
+            module.process(rest)
 
 def main():
-    args = handle_args()
-
-    if args.version:
-        print "tina %s" % __version__
-        return
-
-    if not args.commit or not os.path.exists(".tina"):
-        checkout_and_parse(".", args.interactive)
-
-    if args.commit:
-        commit_and_push()
-        if not args.no_cleanup:
-            cleanup()
-    else:
-        print "To commit these changes, re-run with --commit"
+    initialize()
+    process_args()
 
 if __name__ == "__main__":
     main()

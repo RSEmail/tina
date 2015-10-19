@@ -1,6 +1,6 @@
-import distribute_setup
+#import distribute_setup
 import re
-distribute_setup.use_setuptools()
+#distribute_setup.use_setuptools()
 
 from setuptools import setup
 
@@ -27,7 +27,7 @@ setup(
   test_suite='tina.test',
   version=version,
   url='https://github.com/RSEmail/tina/',
-  packages=['tina'],
+  packages=['tina', 'tina.commands'],
   license='GNU General Public License, version 3 (GPL-3.0)',
   long_description=open('README.md').read(),
 )
